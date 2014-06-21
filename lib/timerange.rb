@@ -3,9 +3,17 @@ require "active_support/time"
 class TimeRange < Range
   VERSION = "0.0.1"
 
-  def initialize(options = {})
-    range = options[:range]
-    super(range.begin, range.end, range.exclude_end?)
+  def initialize(b = nil, e = nil, exclude_end = nil, options = {})
+    if b.is_a?(Hash)
+      options = b
+    end
+
+    if options[:range]
+      range = options[:range]
+      super(range.begin, range.end, range.exclude_end?)
+    else
+      super
+    end
   end
 
   def step(period, options = {})
@@ -20,11 +28,12 @@ class TimeRange < Range
     self.class.new(range: Range.new(bucket(period, self.begin, options), bucket(period, self.end + 1.send(period), options), true))
   end
 
-  def time_zone
-    Time.zone
+  def bucket(period, time, options = {})
+    self.class.bucket(period, time, options)
   end
 
-  def bucket(period, time, options = {})
+  def self.bucket(period, time, options = {})
+    time_zone = Time.zone
     day_start = 0
     week_start = 6 # sunday
     time = time.to_time.in_time_zone(time_zone) - day_start.hours
