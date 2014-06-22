@@ -10,25 +10,27 @@ class TimeRange < Range
     end
 
     if b.is_a?(Hash)
-      options, b, e = b, nil, nil
+      options, b, e, exclude_end = b, nil, nil, false
     elsif e.is_a?(Hash)
-      options, e = e, nil
+      options, e, exclude_end = e, nil, false
     end
 
-    if b.is_a?(String) or e.is_a?(String)
-      time_zone = options[:time_zone] || Time.zone
-      if time_zone.is_a?(ActiveSupport::TimeZone) or (time_zone = ActiveSupport::TimeZone[time_zone])
-        # do nothing
-      else
-        raise "Unrecognized time zone"
-      end
-      b = time_zone.parse(b) if b.is_a?(String)
-      e = time_zone.parse(e) if e.is_a?(String)
+    time_zone = options[:time_zone] || Time.zone
+    if time_zone.is_a?(ActiveSupport::TimeZone) or (time_zone = ActiveSupport::TimeZone[time_zone])
+      # do nothing
+    else
+      raise "Unrecognized time zone"
     end
+    b = time_zone.parse(b) if b.is_a?(String)
+    e = time_zone.parse(e) if e.is_a?(String)
 
     if options[:duration]
       e = b + options[:duration]
       exclude_end = true
+    end
+
+    if !e
+      e = time_zone.now
     end
 
     super(b, e, exclude_end)

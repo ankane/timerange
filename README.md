@@ -19,6 +19,7 @@ time_range.expand(:week).step(1.day)
 
 TimeRange.new("2014-06-01", "2014-06-07")
 TimeRange.new(start: "2014-06-01", duration: 1.week)
+TimeRange.new(4.weeks.ago).expand(:week) # last 4 weeks
 ```
 
 ## Contributing

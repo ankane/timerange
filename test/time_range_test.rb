@@ -31,6 +31,13 @@ class TestTimeRange < Minitest::Test
     assert tr.exclude_end?
   end
 
+  def test_last
+    tr = TimeRange.new(4.weeks.ago)
+    assert_equal 4.weeks.ago, tr.begin
+    assert_equal Time.zone.now, tr.end
+    assert !tr.exclude_end?
+  end
+
   def test_math
     assert_equal TimeRange.today, TimeRange.yesterday + 1.day
     assert_equal TimeRange.yesterday, TimeRange.today - 1.day
