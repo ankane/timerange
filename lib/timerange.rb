@@ -3,7 +3,7 @@ require "active_support/time"
 require "active_support/core_ext/module/attribute_accessors"
 
 class TimeRange < Range
-  VERSION = "0.0.1"
+  VERSION = "0.0.2"
 
   mattr_accessor :time_zone
 
