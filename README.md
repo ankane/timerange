@@ -31,6 +31,8 @@ TimeRange.bucket(:hour, user.created_at)
 TimeRange.bucket(:day, user.created_at, day_start: 2) # 2 am
 TimeRange.bucket(:week, user.created_at, week_start: :mon) # start weeks on Monday
 TimeRange.bucket(:month, user.created_at, time_zone: "Pacific Time (US & Canada)")
+
+TimeRange.time_zone = "Pacific Time (US & Canada)" # defaults to Time.zone
 ```
 
 ## Contributing

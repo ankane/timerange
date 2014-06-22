@@ -1,8 +1,11 @@
 require "time"
 require "active_support/time"
+require "active_support/core_ext/module/attribute_accessors"
 
 class TimeRange < Range
   VERSION = "0.0.1"
+
+  mattr_accessor :time_zone
 
   def initialize(b = nil, e = Time.now, exclude_end = false, options = {})
     if b.is_a?(Range)
@@ -15,7 +18,7 @@ class TimeRange < Range
       options, e, exclude_end = e, nil, false
     end
 
-    time_zone = options[:time_zone] || Time.zone
+    time_zone = options[:time_zone] || self.class.time_zone || Time.zone || "Etc/UTC"
     if time_zone.is_a?(ActiveSupport::TimeZone) or (time_zone = ActiveSupport::TimeZone[time_zone])
       # do nothing
     else
