@@ -31,6 +31,7 @@ class TimeRange < Range
   end
 
   # should step expand by default?
+  # TODO return enum
   def step(period, options = {}, &block)
     period = period.is_a?(Symbol) || period.is_a?(String) ? 1.send(period) : period
     arr = [self.begin]
