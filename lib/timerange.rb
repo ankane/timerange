@@ -73,6 +73,12 @@ class TimeRange < Range
     time_zone = options[:time_zone] || Time.zone
     day_start = options[:day_start] || 0
     week_start = options[:week_start] || 6
+
+    week_start = [:mon, :tue, :wed, :thu, :fri, :sat, :sun].index((options[:week_start] || :sun).to_sym)
+    if !week_start
+      raise "Unrecognized :week_start option"
+    end
+
     time = time.to_time.in_time_zone(time_zone) - day_start.hours
 
     period = period.to_sym
