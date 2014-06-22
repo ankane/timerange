@@ -15,4 +15,12 @@ class TestTimeRange < Minitest::Test
     assert tr.exclude_end?
   end
 
+  def test_step_block
+    count = 0
+    TimeRange.today.expand(:week).step(:day) do |day|
+      count += 1
+    end
+    assert_equal 7, count
+  end
+
 end

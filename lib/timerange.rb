@@ -16,16 +16,24 @@ class TimeRange < Range
     end
   end
 
-  def step(period, options = {})
+  def step(period, options = {}, &block)
     arr = [bucket(period, self.begin, options)]
+    yield(arr.first) if block_given?
     while v = arr.last + 1.send(period) and cover?(v)
+      yield(v) if block_given?
       arr << v
     end
     arr
   end
 
   def expand(period, options = {})
-    self.class.new(range: Range.new(bucket(period, self.begin, options), bucket(period, self.end + 1.send(period), options), true))
+    e =
+      if exclude_end? and self.end == bucket(period, self.end, options)
+        self.end
+      else
+        bucket(period, self.end + 1.send(period), options)
+      end
+    self.class.new(range: Range.new(bucket(period, self.begin, options), e, true))
   end
 
   def bucket(period, time, options = {})
