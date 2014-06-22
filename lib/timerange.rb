@@ -1,3 +1,4 @@
+require "time"
 require "active_support/time"
 
 class TimeRange < Range
@@ -11,6 +12,19 @@ class TimeRange < Range
     if options[:range]
       range = options[:range]
       super(range.begin, range.end, range.exclude_end?)
+    elsif options[:start]
+      start = options[:start]
+
+      time_zone = options[:time_zone] || Time.zone || "Etc/UTC"
+      if time_zone.is_a?(ActiveSupport::TimeZone) or (time_zone = ActiveSupport::TimeZone[time_zone])
+        # do nothing
+      else
+        raise "Unrecognized time zone"
+      end
+
+      start = time_zone.parse(start) if start.is_a?(String)
+      e = start + options[:duration]
+      super(start, e, true)
     else
       super
     end

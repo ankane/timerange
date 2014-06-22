@@ -23,4 +23,12 @@ class TestTimeRange < Minitest::Test
     assert_equal 7, count
   end
 
+  def test_duration
+    tr = TimeRange.new(start: "2014-06-01", duration: 1.week)
+    day = Time.zone.parse("2014-06-01")
+    assert_equal day, tr.begin
+    assert_equal day + 1.week, tr.end
+    assert tr.exclude_end?
+  end
+
 end
