@@ -2,26 +2,28 @@ require "time"
 require "active_support/time"
 
 class TimeRange < Range
+  attr_reader :time_zone
+
   VERSION = "0.0.1"
 
   def initialize(b = nil, e = nil, exclude_end = nil, options = {})
     if b.is_a?(Hash)
       options = b
     end
+    @options = options
+
+    time_zone = options[:time_zone] || Time.zone || "Etc/UTC"
+    if time_zone.is_a?(ActiveSupport::TimeZone) or (time_zone = ActiveSupport::TimeZone[time_zone])
+      @time_zone = time_zone
+    else
+      raise "Unrecognized time zone"
+    end
 
     if options[:range]
       range = options[:range]
-      super(range.begin, range.end, range.exclude_end?)
+      super(range.begin.in_time_zone(time_zone), range.end.in_time_zone(time_zone), range.exclude_end?)
     elsif options[:start]
       start = options[:start]
-
-      time_zone = options[:time_zone] || Time.zone || "Etc/UTC"
-      if time_zone.is_a?(ActiveSupport::TimeZone) or (time_zone = ActiveSupport::TimeZone[time_zone])
-        # do nothing
-      else
-        raise "Unrecognized time zone"
-      end
-
       start = time_zone.parse(start) if start.is_a?(String)
       e = start + options[:duration]
       super(start, e, true)
@@ -31,9 +33,10 @@ class TimeRange < Range
   end
 
   def step(period, options = {}, &block)
-    arr = [bucket(period, self.begin, options)]
+    period = period.is_a?(Symbol) || period.is_a?(String) ? 1.send(period) : period
+    arr = [self.begin]
     yield(arr.first) if block_given?
-    while v = arr.last + 1.send(period) and cover?(v)
+    while v = arr.last + period and cover?(v)
       yield(v) if block_given?
       arr << v
     end
@@ -50,16 +53,21 @@ class TimeRange < Range
     self.class.new(range: Range.new(bucket(period, self.begin, options), e, true))
   end
 
+  def expand_start(period, options = {})
+    self.class.new(range: Range.new(bucket(period, self.begin, options), self.end, exclude_end?))
+  end
+
   def bucket(period, time, options = {})
     self.class.bucket(period, time, options)
   end
 
   def self.bucket(period, time, options = {})
-    time_zone = Time.zone
-    day_start = 0
-    week_start = 6 # sunday
+    time_zone = options[:time_zone] || Time.zone
+    day_start = options[:day_start] || 0
+    week_start = options[:week_start] || 6
     time = time.to_time.in_time_zone(time_zone) - day_start.hours
 
+    period = period.to_sym
     time =
       case period
       when :second
@@ -76,8 +84,10 @@ class TimeRange < Range
         (time - ((7 - week_start + weekday) % 7).days).midnight
       when :month
         time.beginning_of_month
-      else # year
+      when :year
         time.beginning_of_year
+      else
+        raise "Invalid period"
       end
 
     time + day_start.hours
