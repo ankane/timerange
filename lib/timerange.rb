@@ -4,30 +4,31 @@ require "active_support/time"
 class TimeRange < Range
   VERSION = "0.0.1"
 
-  def initialize(b = nil, e = nil, exclude_end = nil, options = {})
+  def initialize(b = nil, e = nil, exclude_end = false, options = {})
+    if b.is_a?(Range)
+      b, e, exclude_end = b.begin, b.end, b.exclude_end?
+    end
+
     if b.is_a?(Hash)
-      options = b
+      options, b, e = b, nil, nil
+    elsif e.is_a?(Hash)
+      options, e = e, nil
     end
 
-    if options[:range]
-      range = options[:range]
-      super(range.begin, range.end, range.exclude_end?)
-    elsif options[:start]
-      start = options[:start]
-
-      time_zone = options[:time_zone] || Time.zone
-      if time_zone.is_a?(ActiveSupport::TimeZone) or (time_zone = ActiveSupport::TimeZone[time_zone])
-        # do nothing
-      else
-        raise "Unrecognized time zone"
-      end
-      start = time_zone.parse(start) if start.is_a?(String)
-
-      e = options[:end] || (start + options[:duration])
-      super(start, e, true)
+    time_zone = options[:time_zone] || Time.zone
+    if time_zone.is_a?(ActiveSupport::TimeZone) or (time_zone = ActiveSupport::TimeZone[time_zone])
+      # do nothing
     else
-      super(b, e, exclude_end)
+      raise "Unrecognized time zone"
     end
+    b = time_zone.parse(b) if b.is_a?(String)
+    e = time_zone.parse(e) if e.is_a?(String)
+    if options[:duration]
+      e = b + options[:duration]
+      exclude_end = true
+    end
+
+    super(b, e, exclude_end)
   end
 
   # should step expand by default?
@@ -50,13 +51,13 @@ class TimeRange < Range
       else
         bucket(period, self.end + 1.send(period), options)
       end
-    self.class.new(range: Range.new(bucket(period, self.begin, options), e, true))
+    self.class.new(bucket(period, self.begin, options), e, true)
   end
 
   def expand_start(period, options = {})
     e = self.end
     e = e.in_time_zone(options[:time_zone]) if options[:time_zone]
-    self.class.new(range: Range.new(bucket(period, self.begin, options), e, exclude_end?))
+    self.class.new(bucket(period, self.begin, options), e, exclude_end?)
   end
 
   def bucket(period, time, options = {})
@@ -97,12 +98,12 @@ class TimeRange < Range
 
   def self.today
     date = Date.today
-    new(range: date..date).expand(:day)
+    new(date, date).expand(:day)
   end
 
   def self.yesterday
     date = Date.yesterday
-    new(range: date..date).expand(:day)
+    new(date, date).expand(:day)
   end
 
   def +(period)

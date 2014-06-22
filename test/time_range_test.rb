@@ -4,7 +4,7 @@ class TestTimeRange < Minitest::Test
 
   def test_time_range
     day = Time.parse("2014-06-01")
-    assert_equal 7, TimeRange.new(range: day..day).expand(:week).step(:day).size
+    assert_equal 7, TimeRange.new(day..day).expand(:week).step(:day).size
   end
 
   def test_today
@@ -24,7 +24,7 @@ class TestTimeRange < Minitest::Test
   end
 
   def test_duration
-    tr = TimeRange.new(start: "2014-06-01", duration: 1.week)
+    tr = TimeRange.new("2014-06-01", duration: 1.week)
     day = Time.zone.parse("2014-06-01")
     assert_equal day, tr.begin
     assert_equal day + 1.week, tr.end
