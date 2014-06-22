@@ -4,7 +4,7 @@ require "active_support/time"
 class TimeRange < Range
   VERSION = "0.0.1"
 
-  def initialize(b = nil, e = nil, exclude_end = false, options = {})
+  def initialize(b = nil, e = Time.now, exclude_end = false, options = {})
     if b.is_a?(Range)
       b, e, exclude_end = b.begin, b.end, b.exclude_end?
     end
@@ -23,14 +23,14 @@ class TimeRange < Range
     end
     b = time_zone.parse(b) if b.is_a?(String)
     e = time_zone.parse(e) if e.is_a?(String)
+    if options[:time_zone]
+      b = b.in_time_zone(b)
+      e = e.in_time_zone(e)
+    end
 
     if options[:duration]
       e = b + options[:duration]
       exclude_end = true
-    end
-
-    if !e
-      e = time_zone.now
     end
 
     super(b, e, exclude_end)
