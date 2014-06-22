@@ -26,6 +26,10 @@ TimeRange.yesterday
 
 TimeRange.today + 4.weeks
 TimeRange.today - 4.weeks
+
+TimeRange.bucket(:day, user.created_at)
+TimeRange.bucket(:month, user.created_at, time_zone: "Pacific Time (US & Canada)")
+TimeRange.bucket(:month, user.created_at, day_start: 2) # 2 am
 ```
 
 ## Contributing
