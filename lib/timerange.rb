@@ -30,10 +30,11 @@ class TimeRange < Range
     end
   end
 
+  # should step expand by default?
   def step(period, options = {}, &block)
     period = period.is_a?(Symbol) || period.is_a?(String) ? 1.send(period) : period
     arr = [self.begin]
-    yield(self.begin) if block_given?
+    yield(arr.last) if block_given?
     while v = arr.last + period and cover?(v)
       yield(v) if block_given?
       arr << v
