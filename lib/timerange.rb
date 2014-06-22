@@ -2,29 +2,27 @@ require "time"
 require "active_support/time"
 
 class TimeRange < Range
-  attr_reader :time_zone
-
   VERSION = "0.0.1"
 
   def initialize(b = nil, e = nil, exclude_end = nil, options = {})
     if b.is_a?(Hash)
       options = b
     end
-    @options = options
-
-    time_zone = options[:time_zone] || Time.zone || "Etc/UTC"
-    if time_zone.is_a?(ActiveSupport::TimeZone) or (time_zone = ActiveSupport::TimeZone[time_zone])
-      @time_zone = time_zone
-    else
-      raise "Unrecognized time zone"
-    end
 
     if options[:range]
       range = options[:range]
-      super(range.begin.in_time_zone(time_zone), range.end.in_time_zone(time_zone), range.exclude_end?)
+      super(range.begin, range.end, range.exclude_end?)
     elsif options[:start]
       start = options[:start]
+
+      time_zone = options[:time_zone] || Time.zone
+      if time_zone.is_a?(ActiveSupport::TimeZone) or (time_zone = ActiveSupport::TimeZone[time_zone])
+        # do nothing
+      else
+        raise "Unrecognized time zone"
+      end
       start = time_zone.parse(start) if start.is_a?(String)
+
       e = start + options[:duration]
       super(start, e, true)
     else
@@ -35,7 +33,7 @@ class TimeRange < Range
   def step(period, options = {}, &block)
     period = period.is_a?(Symbol) || period.is_a?(String) ? 1.send(period) : period
     arr = [self.begin]
-    yield(arr.first) if block_given?
+    yield(self.begin) if block_given?
     while v = arr.last + period and cover?(v)
       yield(v) if block_given?
       arr << v
