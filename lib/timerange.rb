@@ -15,14 +15,17 @@ class TimeRange < Range
       options, e = e, nil
     end
 
-    time_zone = options[:time_zone] || Time.zone
-    if time_zone.is_a?(ActiveSupport::TimeZone) or (time_zone = ActiveSupport::TimeZone[time_zone])
-      # do nothing
-    else
-      raise "Unrecognized time zone"
+    if b.is_a?(String) or e.is_a?(String)
+      time_zone = options[:time_zone] || Time.zone
+      if time_zone.is_a?(ActiveSupport::TimeZone) or (time_zone = ActiveSupport::TimeZone[time_zone])
+        # do nothing
+      else
+        raise "Unrecognized time zone"
+      end
+      b = time_zone.parse(b) if b.is_a?(String)
+      e = time_zone.parse(e) if e.is_a?(String)
     end
-    b = time_zone.parse(b) if b.is_a?(String)
-    e = time_zone.parse(e) if e.is_a?(String)
+
     if options[:duration]
       e = b + options[:duration]
       exclude_end = true
