@@ -23,7 +23,7 @@ class TimeRange < Range
       end
       start = time_zone.parse(start) if start.is_a?(String)
 
-      e = start + options[:duration]
+      e = options[:end] || (start + options[:duration])
       super(start, e, true)
     else
       super
@@ -52,7 +52,9 @@ class TimeRange < Range
   end
 
   def expand_start(period, options = {})
-    self.class.new(range: Range.new(bucket(period, self.begin, options), self.end, exclude_end?))
+    e = self.end
+    e = e.in_time_zone(options[:time_zone]) if options[:time_zone]
+    self.class.new(range: Range.new(bucket(period, self.begin, options), e, exclude_end?))
   end
 
   def bucket(period, time, options = {})
