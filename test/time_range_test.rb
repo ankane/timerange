@@ -31,4 +31,9 @@ class TestTimeRange < Minitest::Test
     assert tr.exclude_end?
   end
 
+  def test_math
+    assert_equal TimeRange.today, TimeRange.yesterday + 1.day
+    assert_equal TimeRange.yesterday, TimeRange.today - 1.day
+  end
+
 end

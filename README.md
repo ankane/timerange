@@ -17,7 +17,8 @@ time_range = TimeRange.new(range: 7.days.ago..Time.now)
 time_range.step(1.day)
 time_range.expand(:week).step(1.day)
 
-time_range = TimeRange.new(start: "2014-06-01", duration: 1.week)
+TimeRange.new("2014-06-01", "2014-06-07")
+TimeRange.new(start: "2014-06-01", duration: 1.week)
 ```
 
 ## Contributing

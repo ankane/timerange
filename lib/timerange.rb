@@ -26,7 +26,7 @@ class TimeRange < Range
       e = options[:end] || (start + options[:duration])
       super(start, e, true)
     else
-      super
+      super(b, e, exclude_end)
     end
   end
 
@@ -103,6 +103,14 @@ class TimeRange < Range
   def self.yesterday
     date = Date.yesterday
     new(range: date..date).expand(:day)
+  end
+
+  def +(period)
+    self.class.new(self.begin + period, self.end + period, exclude_end?)
+  end
+
+  def -(period)
+    self.class.new(self.begin - period, self.end - period, exclude_end?)
   end
 
 end
