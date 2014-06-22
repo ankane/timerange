@@ -14,9 +14,10 @@ gem 'timerange'
 
 ```ruby
 time_range = TimeRange.new(range: 7.days.ago..Time.now)
-time_range.step(:day)
-time_range.expand(:day).step(1.day)
-time_range.expand(:week)
+time_range.step(1.day)
+time_range.expand(:week).step(1.day)
+
+time_range = TimeRange.new(start: "2014-06-01", duration: 1.week)
 ```
 
 ## Contributing
