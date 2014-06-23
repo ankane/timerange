@@ -1,10 +1,11 @@
 require "time"
 require "active_support/time"
-require "active_support/core_ext/module/attribute_accessors"
 require "timerange/version"
 
 class TimeRange < Range
-  mattr_accessor :time_zone
+  class << self
+    attr_accessor :time_zone
+  end
 
   def initialize(b = nil, e = Time.now, exclude_end = false, options = {})
     if b.is_a?(Range)
@@ -14,15 +15,16 @@ class TimeRange < Range
     if b.is_a?(Hash)
       options, b, e, exclude_end = b, nil, nil, false
     elsif e.is_a?(Hash)
-      options, e, exclude_end = e, nil, false
+      options, e, exclude_end = e, Time.now, false
     end
 
-    time_zone = options[:time_zone] || self.class.time_zone || Time.zone || "Etc/UTC"
+    time_zone = options[:time_zone] || TimeRange.time_zone || Time.zone || "Etc/UTC"
     if time_zone.is_a?(ActiveSupport::TimeZone) or (time_zone = ActiveSupport::TimeZone[time_zone])
       # do nothing
     else
       raise "Unrecognized time zone"
     end
+
     b = time_zone.parse(b) if b.is_a?(String)
     e = time_zone.parse(e) if e.is_a?(String)
     b = b.in_time_zone(time_zone)
@@ -32,7 +34,9 @@ class TimeRange < Range
       exclude_end = true
     end
     e = e.in_time_zone(time_zone)
+
     @time_zone = time_zone
+    @options = options.merge(time_zone: @time_zone)
 
     super(b, e, exclude_end)
   end
@@ -57,17 +61,17 @@ class TimeRange < Range
       else
         bucket(period, self.end + 1.send(period), options)
       end
-    self.class.new(bucket(period, self.begin, options), e, true)
+    self.class.new(bucket(period, self.begin, options), e, true, @options.merge(options))
   end
 
   def expand_start(period, options = {})
     e = self.end
     e = e.in_time_zone(options[:time_zone]) if options[:time_zone]
-    self.class.new(bucket(period, self.begin, options), e, exclude_end?)
+    self.class.new(bucket(period, self.begin, options), e, exclude_end?, @options.merge(options))
   end
 
   def bucket(period, time, options = {})
-    self.class.bucket(period, time, {time_zone: @time_zone}.merge(options))
+    self.class.bucket(period, time, @options.merge(options))
   end
 
   def self.bucket(period, time, options = {})
@@ -82,9 +86,8 @@ class TimeRange < Range
 
     time = time.to_time.in_time_zone(time_zone) - day_start.hours
 
-    period = period.to_sym
     time =
-      case period
+      case period.to_sym
       when :second
         time.change(usec: 0)
       when :minute

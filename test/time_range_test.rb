@@ -7,6 +7,12 @@ class TestTimeRange < Minitest::Test
     assert_equal 7, TimeRange.new(day..day).expand(:week).step(:day).size
   end
 
+  def test_time_zone
+    day = Time.parse("2014-06-01")
+    time_zone = "Eastern Time (US & Canada)"
+    assert_equal time_zone, TimeRange.new(day, time_zone: time_zone).expand(:week).first.time_zone.name
+  end
+
   def test_today
     day = Time.now.midnight
     tr = TimeRange.today
