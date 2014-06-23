@@ -18,7 +18,7 @@ class TimeRange < Range
       options, e, exclude_end = e, Time.now, false
     end
 
-    time_zone = options[:time_zone] || TimeRange.time_zone || Time.zone || "Etc/UTC"
+    time_zone = options[:time_zone] || (b.respond_to?(:time_zone) && b.time_zone) || TimeRange.time_zone || Time.zone || "Etc/UTC"
     if time_zone.is_a?(ActiveSupport::TimeZone) or (time_zone = ActiveSupport::TimeZone[time_zone])
       # do nothing
     else

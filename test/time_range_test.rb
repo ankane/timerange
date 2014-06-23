@@ -13,6 +13,12 @@ class TestTimeRange < Minitest::Test
     assert_equal time_zone, TimeRange.new(day, time_zone: time_zone).expand(:week).first.time_zone.name
   end
 
+  def test_default_time_zone
+    time_zone = "Central Time (US & Canada)"
+    day = ActiveSupport::TimeZone[time_zone].parse("2014-06-01")
+    assert_equal time_zone, TimeRange.new(day).expand(:week).first.time_zone.name
+  end
+
   def test_today
     day = Time.now.midnight
     tr = TimeRange.today
