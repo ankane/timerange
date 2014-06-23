@@ -8,6 +8,10 @@ class TimeRange < Range
   end
 
   def initialize(b = nil, e = Time.now, exclude_end = false, options = {})
+    if !b
+      raise TypeError, "no implicit conversion of nil into Time"
+    end
+
     if b.is_a?(Range)
       b, e, exclude_end = b.begin, b.end, b.exclude_end?
     end
