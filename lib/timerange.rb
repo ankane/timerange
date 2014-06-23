@@ -35,8 +35,7 @@ class TimeRange < Range
     end
     e = e.in_time_zone(time_zone)
 
-    @time_zone = time_zone
-    @options = options.merge(time_zone: @time_zone)
+    @options = options.merge(time_zone: time_zone)
 
     super(b, e, exclude_end)
   end
@@ -75,7 +74,7 @@ class TimeRange < Range
   end
 
   def self.bucket(period, time, options = {})
-    time_zone = options[:time_zone] || Time.zone
+    time_zone = options[:time_zone] || TimeRange.time_zone || Time.zone || "Etc/UTC"
     day_start = options[:day_start] || 0
     week_start = options[:week_start] || 6
 
