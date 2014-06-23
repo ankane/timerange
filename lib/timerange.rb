@@ -1,10 +1,9 @@
 require "time"
 require "active_support/time"
 require "active_support/core_ext/module/attribute_accessors"
+require "timerange/version"
 
 class TimeRange < Range
-  VERSION = "0.0.2"
-
   mattr_accessor :time_zone
 
   def initialize(b = nil, e = Time.now, exclude_end = false, options = {})
@@ -26,15 +25,14 @@ class TimeRange < Range
     end
     b = time_zone.parse(b) if b.is_a?(String)
     e = time_zone.parse(e) if e.is_a?(String)
-    if options[:time_zone]
-      b = b.in_time_zone(b)
-      e = e.in_time_zone(e)
-    end
+    b = b.in_time_zone(time_zone)
 
     if options[:duration]
       e = b + options[:duration]
       exclude_end = true
     end
+    e = e.in_time_zone(time_zone)
+    @time_zone = time_zone
 
     super(b, e, exclude_end)
   end
@@ -69,7 +67,7 @@ class TimeRange < Range
   end
 
   def bucket(period, time, options = {})
-    self.class.bucket(period, time, options)
+    self.class.bucket(period, time, {time_zone: @time_zone}.merge(options))
   end
 
   def self.bucket(period, time, options = {})
