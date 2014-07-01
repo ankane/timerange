@@ -59,4 +59,12 @@ class TestTimeRange < Minitest::Test
     assert_equal TimeRange.yesterday, TimeRange.today - 1.day
   end
 
+  def test_within
+    tr = TimeRange.new("2014-06-01", within: 5.minutes)
+    day = Time.zone.parse("2014-06-01")
+    assert_equal day - 5.minutes, tr.begin
+    assert_equal day + 5.minutes, tr.end
+    assert !tr.exclude_end?
+  end
+
 end

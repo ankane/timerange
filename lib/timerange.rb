@@ -32,12 +32,17 @@ class TimeRange < Range
     b = time_zone.parse(b) if b.is_a?(String)
     e = time_zone.parse(e) if e.is_a?(String)
     b = b.in_time_zone(time_zone)
+    e = e.in_time_zone(time_zone)
 
     if options[:duration]
       e = b + options[:duration]
       exclude_end = true
     end
-    e = e.in_time_zone(time_zone)
+    if options[:within]
+      e = b + options[:within]
+      b -= options[:within]
+      exclude_end = false
+    end
 
     @options = options.merge(time_zone: time_zone)
 
