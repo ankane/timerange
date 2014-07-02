@@ -119,14 +119,14 @@ class TimeRange < Range
     time + day_start.hours
   end
 
-  def self.today
-    date = Date.today
-    new(date, date).expand(:day)
+  def self.today(options = {})
+    date = Time.now
+    new(date, date, options).expand(:day)
   end
 
-  def self.yesterday
-    date = Date.yesterday
-    new(date, date).expand(:day)
+  def self.yesterday(options = {})
+    date = Time.now - 1.day
+    new(date, date, options).expand(:day)
   end
 
   def +(period)
